@@ -117,15 +117,29 @@ class ButtonBox(Box):
         self.inactive_img = pygame.image.load(inactive_img_path)
         self.active_img = pygame.image.load(active_img_path)
         self.active = False
+        self.scale_factor = 1.2
+        
     
     def render(self, screen):
         img = self.active_img if self.active else self.inactive_img
-        screen.blit(img, (self.rect.x, self.rect.y))
+        scaled_rect = self.rect.copy()
+
+        if self.hovered:
+            scaled_width = int(self.rect.width * self.scale_factor)
+            scaled_height = int(self.rect.height * self.scale_factor)
+            scaled_rect = scaled_rect.inflate(scaled_width - self.rect.width, scaled_height - self.rect.height)
+            scaled_rect.center = self.rect.center
+
+        screen.blit(img, (scaled_rect.topleft))
 
     def update(self, event):
         super().update(event)
-        if self.clicked:
-            self.active = not self.active
+        if self.hovered and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            self.active = not self.active  
+
+        # reset clicked state
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.clicked = False
 
     def get_value(self):
         return self.active
